@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Microservices</h1>
+    <form onsubmit="createFeed(event);" id="form_feed" style="display:none">
+        <input type="text" placeholder="digite sua msg" id="msg">
+        <input type="submit">
+    </form>
+    <form onsubmit="login(event);" id="form_login">
+        <input type="text" placeholder="digite seu nome" id="username">
+        <input type="submit" value="enviar">
+    </form>
+    <table id="feed"></table>
+    <script>
+
+        let username = ""
+        let feeds = []
+
+        function login(event) {
+            event.preventDefault()
+            username = document.getElementById("username").value
+            if (username != "" && username != null) {
+                document.getElementById("form_login").style = "display:none"
+                document.getElementById("form_feed").style = "display:block"
+                reloadFeed()
+                console.log(username)
+            }
+        }
+
+        function reloadFeed() {
+
+            fetch("http://localhost:8080/feeds").then(resp => {
+                resp.json().then(json => {
+                    console.log(json)
+                    refreshTable(json._embedded.feeds)
+                    feeds = json._embedded.feeds
+                })
+            }
+            )
+            // setTimeout(reloadFeed, 1000)
+        }
+
+        function refreshTable(data) {
+            const html = "<tbody>" + data.map(
+                feed => {
+                    console.log(feed)
+                    return `<tr><td>${feed.username}:</td><td>${feed.content}</td></tr>`
+                }
+            ).join("") + "</tbody>"
+
+            console.log(html)
+            document.getElementById("feed").innerHTML = html
+        }
+
+        function createFeed(event) {
+            const msg = document.getElementById("msg").value
+            document.getElementById("msg").value = ""
+            event.preventDefault()
+            if (msg != null && msg != "") {
+                const body = { username: username, content: msg }
+                fetch("http://localhost:8080/feeds", {
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    method: "POST",
+                    body: JSON.stringify(body)
+                }).catch(err => console.log(err))
+                console.log(event)
+                feeds.push(body)
+                refreshTable(feeds)
+            }
+        }
+    </script>
+</body>
+
+</html>
