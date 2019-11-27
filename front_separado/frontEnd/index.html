@@ -18,11 +18,17 @@
         <input type="text" placeholder="digite seu nome" id="username">
         <input type="submit" value="enviar">
     </form>
+    <h1>Feed</h1>
     <table id="feed"></table>
+    <h1>News</h1>
+    <table id="news"></table>
     <script>
 
         let username = ""
         let feeds = []
+        let news = []
+        let feedUrl = "http://104.197.58.45:8080"
+        let newsUrl = "http://34.66.32.109:8080"
 
         function login(event) {
             event.preventDefault()
@@ -37,27 +43,46 @@
 
         function reloadFeed() {
 
-            fetch("http://localhost:8080/feeds").then(resp => {
+            fetch(feedUrl + "/feeds").then(resp => {
                 resp.json().then(json => {
                     console.log(json)
-                    refreshTable(json._embedded.feeds)
                     feeds = json._embedded.feeds
+                    refreshTable(feeds, news)
+                    
                 })
             }
             )
-            // setTimeout(reloadFeed, 1000)
+            fetch(newsUrl + "/news").then(resp => {
+                resp.json().then(json => {
+                    console.log(json)
+                    refreshTable(feeds,news)
+                    news = json._embedded.news
+                })
+            }
+            )
+            setTimeout(reloadFeed, 1000)
         }
 
-        function refreshTable(data) {
-            const html = "<tbody>" + data.map(
+        function refreshTable(feedsData, newsData) {
+            const htmlFeed = "<tbody>" + feedsData.map(
                 feed => {
                     console.log(feed)
                     return `<tr><td>${feed.username}:</td><td>${feed.content}</td></tr>`
                 }
             ).join("") + "</tbody>"
 
-            console.log(html)
-            document.getElementById("feed").innerHTML = html
+            console.log(htmlFeed)
+            document.getElementById("feed").innerHTML = htmlFeed
+
+            const htmlNews = "<tbody>" + newsData.map(
+                newsJson => {
+                    console.log(feed)
+                    return `<tr><td>${newsJson.content}:</td><td><img src="${newsJson.imgUrl}"/></td></tr>`
+                }
+            ).join("") + "</tbody>"
+
+            console.log(htmlNews)
+            document.getElementById("news").innerHTML = htmlNews
         }
 
         function createFeed(event) {
@@ -66,7 +91,7 @@
             event.preventDefault()
             if (msg != null && msg != "") {
                 const body = { username: username, content: msg }
-                fetch("http://localhost:8080/feeds", {
+                fetch(feedUrl + "/feeds", {
                     headers: {
                         "Content-Type": "application/json"
                     },

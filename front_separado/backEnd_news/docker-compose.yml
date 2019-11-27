@@ -1,0 +1,24 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:9.6
+    volumes:
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=testdb
+  # springbootapp:
+  #  image: maven:3.6-jdk-8
+  #  ports:
+  #    - 8080:8080
+  #  entrypoint: mvn clean spring-boot:run -DskipTests -Drun.profiles=docker -f /var/pom.xml
+  #  depends_on:
+  #    - postgres
+  #  volumes:
+  #    - ~/.m2:/root/.m2/
+  #    - ./:/var
+volumes:
+  postgres-data:
